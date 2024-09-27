@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
+mod battery;
 mod error;
 mod rate;
 mod sound;
+mod sysfs;
 mod wifi;
 
 use std::io::Write;
@@ -70,6 +72,9 @@ async fn emit_status() -> Result<(), CliError> {
     let mut blocks: Vec<SwayBarBlock> = Vec::new();
 
     blocks.push(crate::rate::get_rate(IFACE_NAME).await?);
+    if let Some(b) = crate::battery::get_battery()? {
+        blocks.push(b);
+    }
     blocks.push(crate::wifi::get_wifi(IFACE_NAME).await?);
     blocks.push(crate::sound::get_sound()?);
     blocks.push(get_time());
