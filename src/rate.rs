@@ -4,6 +4,25 @@ use crate::{sysfs::read_file_as_u64, CliError, SwayBarBlock};
 
 const INTERVAL: u64 = 500;
 
+const KIB: u64 = 1 << 10;
+const MIB: u64 = 1 << 20;
+const GIB: u64 = 1 << 30;
+const TIB: u64 = 1 << 40;
+
+fn bytes_to_human(bytes: u64) -> String {
+    if bytes > TIB {
+        format!("{}.{} TiB", bytes / TIB, bytes % TIB / GIB)
+    } else if bytes >= GIB {
+        format!("{}.{} GiB", bytes / GIB, bytes % GIB / MIB)
+    } else if bytes >= MIB {
+        format!("{}.{} MiB", bytes / MIB, bytes % MIB / KIB)
+    } else if bytes >= KIB {
+        format!("{}.{} KiB", bytes / KIB, bytes % KIB)
+    } else {
+        format!("{bytes} B")
+    }
+}
+
 pub(crate) async fn get_rate(
     iface_name: &str,
 ) -> Result<SwayBarBlock, CliError> {
@@ -11,10 +30,10 @@ pub(crate) async fn get_rate(
     Ok(SwayBarBlock {
         name: "rate".into(),
         full_text: format!(
-            "{iface_name:>8}: v{: >9}/s ^{: >9}/s",
+            "{iface_name:>8}: v {: >9}/s ^ {: >9}/s",
             rx_speed, tx_speed
         ),
-        min_width: Some(26),
+        min_width: Some(28),
         ..Default::default()
     })
 }
@@ -25,10 +44,7 @@ async fn get_net_speed(iface_name: &str) -> Result<(String, String), CliError> {
     let (new_rx, new_tx) = get_net_bytes(iface_name)?;
     let rx_speed = (new_rx - cur_rx) * 1000 / INTERVAL;
     let tx_speed = (new_tx - cur_tx) * 1000 / INTERVAL;
-    Ok((
-        bytesize::ByteSize::b(rx_speed).to_string_as(true),
-        bytesize::ByteSize::b(tx_speed).to_string_as(true),
-    ))
+    Ok((bytes_to_human(rx_speed), bytes_to_human(tx_speed)))
 }
 
 fn get_net_bytes(iface_name: &str) -> Result<(u64, u64), CliError> {
