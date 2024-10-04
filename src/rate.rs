@@ -11,13 +11,13 @@ const TIB: u64 = 1 << 40;
 
 fn bytes_to_human(bytes: u64) -> String {
     if bytes > TIB {
-        format!("{}.{} TiB", bytes / TIB, bytes % TIB / GIB)
+        format!("{}.{} TiB", bytes / TIB, (bytes % TIB) * 10 / TIB)
     } else if bytes >= GIB {
-        format!("{}.{} GiB", bytes / GIB, bytes % GIB / MIB)
+        format!("{}.{} GiB", bytes / GIB, (bytes % GIB) * 10 / GIB)
     } else if bytes >= MIB {
-        format!("{}.{} MiB", bytes / MIB, bytes % MIB / KIB)
+        format!("{}.{} MiB", bytes / MIB, (bytes % MIB) * 10 / MIB)
     } else if bytes >= KIB {
-        format!("{}.{} KiB", bytes / KIB, bytes % KIB)
+        format!("{}.{} KiB", bytes / KIB, (bytes % KIB) * 10 / KIB)
     } else {
         format!("{bytes} B")
     }
