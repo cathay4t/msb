@@ -32,16 +32,16 @@ pub(crate) async fn get_wifi(
         if let Some(signal) = iface.wifi.as_ref().and_then(|w| w.signal) {
             let signal = dbm_to_percentage(signal);
             let color = if signal > 50 {
-                crate::COLOR_GREEN
+                None
             } else if signal > 25 {
-                crate::COLOR_YELLOW
+                Some(crate::COLOR_YELLOW.to_string())
             } else {
-                crate::COLOR_RED
+                Some(crate::COLOR_RED.to_string())
             };
             return Ok(SwayBarBlock {
                 name: "wifi".into(),
                 full_text: format!("W: {signal}%"),
-                color: Some(color.to_string()),
+                color,
                 ..Default::default()
             });
         }
