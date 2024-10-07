@@ -32,7 +32,7 @@ pub(crate) fn get_battery() -> Result<Option<SwayBarBlock>, CliError> {
     let time_left_hour = time_left as u8;
     let time_left_min = (time_left.fract() * 60.0) as u8;
 
-    let color = if time_left < 0.5 {
+    let color = if time_left < 0.5 && consumption > 0 {
         crate::COLOR_RED.to_string()
     } else if percent > 60 {
         crate::COLOR_GREEN.to_string()
