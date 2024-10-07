@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    sysfs::{read_file_as_i64, read_file_as_u64},
+    fs::{read_file_as_i64, read_file_as_u64},
     CliError, SwayBarBlock,
 };
 

@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod battery;
+mod cpu;
 mod error;
+mod fs;
 mod rate;
 mod sound;
-mod sysfs;
 mod wifi;
 
 use std::io::Write;
@@ -76,6 +77,7 @@ async fn emit_status() -> Result<(), CliError> {
         blocks.push(b);
     }
     blocks.push(crate::wifi::get_wifi(IFACE_NAME).await?);
+    blocks.push(crate::cpu::get_cpu().await?);
     blocks.push(crate::sound::get_sound()?);
     blocks.push(get_time());
 

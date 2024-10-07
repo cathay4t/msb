@@ -4,7 +4,7 @@ use std::io::Read;
 
 use crate::CliError;
 
-fn read_file(file_path: &str) -> Result<String, CliError> {
+pub(crate) fn read_file(file_path: &str) -> Result<String, CliError> {
     let mut fd = std::fs::File::open(file_path)?;
     let mut contents = String::new();
     fd.read_to_string(&mut contents)?;

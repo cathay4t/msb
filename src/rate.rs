@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{sysfs::read_file_as_u64, CliError, SwayBarBlock};
+use crate::{fs::read_file_as_u64, CliError, SwayBarBlock};
 
 const INTERVAL: u64 = 500;
 
