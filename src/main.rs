@@ -6,6 +6,7 @@ mod error;
 mod fs;
 mod rate;
 mod sound;
+mod temp;
 mod wifi;
 
 use std::io::Write;
@@ -78,6 +79,7 @@ async fn emit_status() -> Result<(), CliError> {
     }
     blocks.push(crate::wifi::get_wifi(IFACE_NAME).await?);
     blocks.push(crate::cpu::get_cpu().await?);
+    blocks.push(crate::temp::get_temp()?);
     blocks.push(crate::sound::get_sound()?);
     blocks.push(get_time());
 

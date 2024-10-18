@@ -7,6 +7,10 @@ use crate::{
 
 const SYSFS_BASE_DIR: &str = "/sys/class/power_supply/BAT0";
 
+const EMOJI_CHARGING: &str = "⚡︎";
+const EMOJI_BATTERY_GOOD: &str = "🔋";
+const EMOJI_BATTERY_EMPTY: &str = "🪫";
+
 pub(crate) fn get_battery() -> Result<Option<SwayBarBlock>, CliError> {
     if !std::fs::exists(SYSFS_BASE_DIR).unwrap_or_default() {
         return Ok(None);
@@ -21,7 +25,6 @@ pub(crate) fn get_battery() -> Result<Option<SwayBarBlock>, CliError> {
     let percent = (now as f64 / full as f64 * 100.0) as u64;
 
     // Current power consumption in uW
-    let charge_str = if is_charging { "⚡" } else { "🔋" };
     let consumption = read_file_as_i64(&format!("{SYSFS_BASE_DIR}/power_now"))?;
 
     let time_left = if is_charging {
@@ -34,14 +37,16 @@ pub(crate) fn get_battery() -> Result<Option<SwayBarBlock>, CliError> {
     let time_left_hour = time_left as u8;
     let time_left_min = (time_left.fract() * 60.0) as u8;
 
-    let color = if time_left < 0.5 && !is_charging {
-        Some(crate::COLOR_RED.to_string())
+    let (charge_str, color) = if is_charging {
+        (EMOJI_CHARGING, None)
+    } else if time_left < 0.5 {
+        (EMOJI_BATTERY_EMPTY, Some(crate::COLOR_RED.to_string()))
     } else if percent > 60 {
-        None
+        (EMOJI_BATTERY_GOOD, None)
     } else if percent > 30 {
-        Some(crate::COLOR_YELLOW.to_string())
+        (EMOJI_BATTERY_GOOD, Some(crate::COLOR_YELLOW.to_string()))
     } else {
-        Some(crate::COLOR_RED.to_string())
+        (EMOJI_BATTERY_EMPTY, Some(crate::COLOR_RED.to_string()))
     };
 
     Ok(Some(SwayBarBlock {
