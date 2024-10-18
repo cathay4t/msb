@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    fs::{read_file_as_i64, read_file_as_u64},
+    fs::{read_file_as_i64, read_file_as_u64, read_file},
     CliError, SwayBarBlock,
 };
 
@@ -15,24 +15,26 @@ pub(crate) fn get_battery() -> Result<Option<SwayBarBlock>, CliError> {
     let now = read_file_as_u64(&format!("{SYSFS_BASE_DIR}/energy_now"))?;
     let full =
         read_file_as_u64(&format!("{SYSFS_BASE_DIR}/energy_full_design"))?;
+    let is_charging =
+        read_file(&format!("{SYSFS_BASE_DIR}/status"))? != "Discharging";
 
     let percent = (now as f64 / full as f64 * 100.0) as u64;
 
     // Current power consumption in uW
+    let charge_str = if is_charging { "⚡" } else { "🔋" };
     let consumption = read_file_as_i64(&format!("{SYSFS_BASE_DIR}/power_now"))?;
-    let charge_str = if consumption > 0 { "🔋" } else { "⚡" };
 
-    let time_left = if consumption > 0 {
-        now as f64 / consumption as f64
+    let time_left = if is_charging {
+        (full - now) as f64 / consumption as f64
     } else if now >= full {
         0.0
     } else {
-        (full as f64 - now as f64) / (-consumption as f64)
+        now as f64 / consumption as f64
     };
     let time_left_hour = time_left as u8;
     let time_left_min = (time_left.fract() * 60.0) as u8;
 
-    let color = if time_left < 0.5 && consumption > 0 {
+    let color = if time_left < 0.5 && !is_charging {
         crate::COLOR_RED.to_string()
     } else if percent > 60 {
         crate::COLOR_GREEN.to_string()
