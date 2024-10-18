@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    fs::{read_file_as_i64, read_file_as_u64, read_file},
+    fs::{read_file, read_file_as_i64, read_file_as_u64},
     CliError, SwayBarBlock,
 };
 
@@ -35,18 +35,18 @@ pub(crate) fn get_battery() -> Result<Option<SwayBarBlock>, CliError> {
     let time_left_min = (time_left.fract() * 60.0) as u8;
 
     let color = if time_left < 0.5 && !is_charging {
-        crate::COLOR_RED.to_string()
+        Some(crate::COLOR_RED.to_string())
     } else if percent > 60 {
-        crate::COLOR_GREEN.to_string()
+        None
     } else if percent > 30 {
-        crate::COLOR_YELLOW.to_string()
+        Some(crate::COLOR_YELLOW.to_string())
     } else {
-        crate::COLOR_RED.to_string()
+        Some(crate::COLOR_RED.to_string())
     };
 
     Ok(Some(SwayBarBlock {
         name: "battery".into(),
-        color: Some(color),
+        color,
         full_text: format!(
             "{charge_str}: {percent}% \
             {time_left_hour:02}:{time_left_min:02}"

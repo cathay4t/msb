@@ -16,7 +16,7 @@ use crate::error::CliError;
 
 pub(crate) const COLOR_RED: &str = "#FF0000";
 pub(crate) const COLOR_YELLOW: &str = "#E9F505";
-pub(crate) const COLOR_GREEN: &str = "#00FF00";
+// pub(crate) const COLOR_GREEN: &str = "#00FF00";
 
 const IFACE_NAME: &str = "wlan0";
 const INTERVAL: u64 = 10;
