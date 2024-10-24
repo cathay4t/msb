@@ -32,7 +32,7 @@ pub(crate) fn get_temp() -> Result<SwayBarBlock, CliError> {
             }
         }
     }
-    let color = if degree >= 60 {
+    let color = if degree >= 80 {
         Some(crate::COLOR_RED.to_string())
     } else {
         None
