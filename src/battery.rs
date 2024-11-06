@@ -28,9 +28,11 @@ pub(crate) fn get_battery() -> Result<Option<SwayBarBlock>, CliError> {
     let consumption = read_file_as_i64(&format!("{SYSFS_BASE_DIR}/power_now"))?;
 
     let time_left = if is_charging {
-        (full - now) as f64 / consumption as f64
-    } else if now >= full {
-        0.0
+        if now >= full {
+            0.0
+        } else {
+            (full - now) as f64 / consumption as f64
+        }
     } else {
         now as f64 / consumption as f64
     };
