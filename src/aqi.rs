@@ -21,7 +21,6 @@ impl AqiFetcher {
         let aqi_clone = aqi.clone();
         tokio::spawn(async move {
             loop {
-                // Process each socket concurrently.
                 if let Ok(i) = get_aqi().await {
                     aqi_clone.store(i, Ordering::Relaxed);
                 }
