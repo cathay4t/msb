@@ -10,6 +10,7 @@ description = "My Sway Bar"
 [dependencies]
 chrono = { version = "0.4.38", features = ["alloc", "clock", "now", "std"], default-features = false }
 nispor = "1.2.21"
+reqwest = { version = "0.12.9", default-features = false, features = ["default-tls", "gzip"] }
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
 tokio = { version = "1.40.0", features = ["signal", "rt-multi-thread"] }

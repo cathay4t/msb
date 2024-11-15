@@ -24,7 +24,8 @@ pub(crate) fn get_temp() -> Result<SwayBarBlock, CliError> {
     }
 
     for prefered in &HWMON_NAMES {
-        if let Some(hwmon_dir) = name_to_path.get(prefered.to_string().as_str()) {
+        if let Some(hwmon_dir) = name_to_path.get(prefered.to_string().as_str())
+        {
             let temp_file_path = format!("{hwmon_dir}/temp1_input");
             if std::path::Path::new(&temp_file_path).is_file() {
                 degree = read_file_as_u64(&temp_file_path)? / 1000;

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
+mod aqi;
 mod battery;
 mod cpu;
 mod error;
@@ -70,9 +71,14 @@ fn get_time() -> SwayBarBlock {
     }
 }
 
-async fn emit_status() -> Result<(), CliError> {
+async fn emit_status(
+    aqi_fether: &crate::aqi::AqiFetcher,
+) -> Result<(), CliError> {
     let mut blocks: Vec<SwayBarBlock> = Vec::new();
 
+    if let Some(b) = aqi_fether.get() {
+        blocks.push(b);
+    }
     blocks.push(crate::rate::get_rate(IFACE_NAME).await?);
     if let Some(b) = crate::battery::get_battery()? {
         blocks.push(b);
@@ -102,16 +108,18 @@ async fn main() -> Result<(), CliError> {
 
     println!("[");
 
+    let aqi_fether = crate::aqi::AqiFetcher::new().await?;
+
     loop {
         tokio::select! {
             _ = interval.tick() => {
-                if let Err(e) = emit_status().await {
+                if let Err(e) = emit_status(&aqi_fether).await {
                     log(&e.to_string())?;
                 }
             }
             _ = continue_stream.recv() => {
                 log("Got continue signal")?;
-                if let Err(e) = emit_status().await {
+                if let Err(e) = emit_status(&aqi_fether).await {
                     log(&e.to_string())?;
                 }
             }
