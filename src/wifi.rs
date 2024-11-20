@@ -40,7 +40,7 @@ pub(crate) async fn get_wifi(
             };
             return Ok(SwayBarBlock {
                 name: "wifi".into(),
-                full_text: format!("W: {signal}%"),
+                full_text: format!("📶 {signal}%"),
                 color,
                 ..Default::default()
             });
