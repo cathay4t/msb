@@ -34,8 +34,16 @@ impl AqiFetcher {
         let aqi: u32 = self.aqi.load(Ordering::Relaxed);
 
         if aqi > 0 {
+            let color = if aqi >= 150 {
+                Some(crate::COLOR_RED.to_string())
+            } else if aqi >= 100 {
+                Some(crate::COLOR_YELLOW.to_string())
+            } else {
+                None
+            };
             Some(SwayBarBlock {
                 name: "aqi".into(),
+                color,
                 full_text: format!("AQI: {aqi}"),
                 min_width: Some(9),
                 ..Default::default()
