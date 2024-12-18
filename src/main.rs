@@ -85,7 +85,9 @@ async fn emit_status(
     }
     blocks.push(crate::wifi::get_wifi(IFACE_NAME).await?);
     blocks.push(crate::cpu::get_cpu().await?);
-    blocks.push(crate::temp::get_temp()?);
+    for block in crate::temp::get_temp()? {
+        blocks.push(block);
+    }
     blocks.push(crate::sound::get_sound()?);
     blocks.push(get_time());
 

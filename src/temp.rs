@@ -11,7 +11,8 @@ const HWMON_NAMES: [&str; 3] = ["k10temp", "thinkpad", "coretemp"];
 
 const SYSFS_HWMON_PATH: &str = "/sys/class/hwmon/";
 
-pub(crate) fn get_temp() -> Result<SwayBarBlock, CliError> {
+pub(crate) fn get_temp() -> Result<Vec<SwayBarBlock>, CliError> {
+    let mut ret: Vec<SwayBarBlock> = Vec::new();
     let mut degree = 0u64;
 
     let mut name_to_path: HashMap<String, String> = HashMap::new();
@@ -39,11 +40,41 @@ pub(crate) fn get_temp() -> Result<SwayBarBlock, CliError> {
         None
     };
 
-    Ok(SwayBarBlock {
+    ret.push(SwayBarBlock {
         name: "temp".into(),
-        full_text: format!("🌡: {degree:>2}°C"),
-        min_width: Some(8),
+        full_text: format!("🌡: CPU {degree:>2}°C"),
+        min_width: Some(12),
         color,
         ..Default::default()
-    })
+    });
+
+    // Get NVME disk temperature
+    for subdir in read_dir(SYSFS_HWMON_PATH)? {
+        let subdir = format!("{SYSFS_HWMON_PATH}/{subdir}");
+
+        let hwmon_name = read_file(&format!("{subdir}/name"))?;
+        if hwmon_name != "nvme" {
+            continue;
+        }
+
+        let temp_file_path = format!("{subdir}/temp1_input");
+        if std::path::Path::new(&temp_file_path).is_file() {
+            degree = read_file_as_u64(&temp_file_path)? / 1000;
+            let color = if degree >= 80 {
+                Some(crate::COLOR_RED.to_string())
+            } else {
+                None
+            };
+
+            ret.push(SwayBarBlock {
+                name: "nvme".into(),
+                full_text: format!("🌡: DISK {degree:>2}°C"),
+                min_width: Some(13),
+                color,
+                ..Default::default()
+            });
+        }
+    }
+
+    Ok(ret)
 }
