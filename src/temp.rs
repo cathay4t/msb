@@ -42,8 +42,8 @@ pub(crate) fn get_temp() -> Result<Vec<SwayBarBlock>, CliError> {
 
     ret.push(SwayBarBlock {
         name: "temp".into(),
-        full_text: format!("🌡: CPU {degree:>2}°C"),
-        min_width: Some(12),
+        full_text: format!("🌡: C {degree:>2}°C"),
+        min_width: Some(10),
         color,
         ..Default::default()
     });
@@ -68,8 +68,8 @@ pub(crate) fn get_temp() -> Result<Vec<SwayBarBlock>, CliError> {
 
             ret.push(SwayBarBlock {
                 name: "nvme".into(),
-                full_text: format!("🌡: DISK {degree:>2}°C"),
-                min_width: Some(13),
+                full_text: format!("🌡: 💾 {degree:>2}°C"),
+                min_width: Some(11),
                 color,
                 ..Default::default()
             });
