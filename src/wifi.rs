@@ -46,5 +46,10 @@ pub(crate) async fn get_wifi(
             });
         }
     }
-    Err(format!("Failed to find WIFI interface {iface_name}").into())
+    Ok(SwayBarBlock {
+        name: "wifi".into(),
+        full_text: "📶 0%".to_string(),
+        color: Some(crate::COLOR_RED.to_string()),
+        ..Default::default()
+    })
 }
