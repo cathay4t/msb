@@ -80,15 +80,15 @@ async fn emit_status(
         blocks.push(b);
     }
     blocks.push(crate::rate::get_rate(IFACE_NAME).await?);
-    if let Some(b) = crate::battery::get_battery()? {
-        blocks.push(b);
-    }
     blocks.push(crate::wifi::get_wifi(IFACE_NAME).await?);
     blocks.push(crate::cpu::get_cpu().await?);
     for block in crate::temp::get_temp()? {
         blocks.push(block);
     }
     blocks.push(crate::sound::get_sound()?);
+    if let Some(b) = crate::battery::get_battery()? {
+        blocks.push(b);
+    }
     blocks.push(get_time());
 
     println!("{}", serde_json::to_string_pretty(&blocks)?);
