@@ -34,9 +34,9 @@ impl AqiFetcher {
         let aqi: u32 = self.aqi.load(Ordering::Relaxed);
 
         if aqi > 0 {
-            let color = if aqi >= 150 {
+            let color = if aqi >= 200 {
                 Some(crate::COLOR_RED.to_string())
-            } else if aqi >= 100 {
+            } else if aqi >= 150 {
                 Some(crate::COLOR_YELLOW.to_string())
             } else {
                 None
