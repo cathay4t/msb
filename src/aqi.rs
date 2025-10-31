@@ -21,6 +21,7 @@ impl AqiFetcher {
         let aqi_clone = aqi.clone();
         tokio::spawn(async move {
             loop {
+                aqi_clone.store(0, Ordering::Relaxed);
                 if let Ok(i) = get_aqi().await {
                     aqi_clone.store(i, Ordering::Relaxed);
                 }
