@@ -79,15 +79,32 @@ async fn emit_status(
     if let Some(b) = aqi_fether.get() {
         blocks.push(b);
     }
-    blocks.push(crate::rate::get_rate(IFACE_NAME).await?);
-    blocks.push(crate::wifi::get_wifi(IFACE_NAME).await?);
-    blocks.push(crate::cpu::get_cpu().await?);
-    for block in crate::temp::get_temp()? {
-        blocks.push(block);
+    match crate::rate::get_rate(IFACE_NAME).await {
+        Ok(b) => blocks.push(b),
+        Err(e) => log::warn!("{e}"),
     }
-    blocks.push(crate::sound::get_sound()?);
-    if let Some(b) = crate::battery::get_battery()? {
-        blocks.push(b);
+    match crate::wifi::get_wifi(IFACE_NAME).await {
+        Ok(b) => blocks.push(b),
+        Err(e) => log::warn!("{e}"),
+    }
+    match crate::cpu::get_cpu().await {
+        Ok(b) => blocks.push(b),
+        Err(e) => log::warn!("{e}"),
+    }
+    match crate::temp::get_temp() {
+        Ok(bs) => blocks.extend_from_slice(&bs),
+        Err(e) => log::warn!("{e}"),
+    }
+    match crate::sound::get_sound() {
+        Ok(b) => blocks.push(b),
+        Err(e) => log::warn!("{e}"),
+    }
+    match crate::battery::get_battery() {
+        Ok(Some(b)) => blocks.push(b),
+        Ok(None) => (),
+        Err(e) => {
+            log::warn!("{e}")
+        }
     }
     blocks.push(get_time());
 
@@ -102,6 +119,11 @@ async fn main() -> Result<(), CliError> {
         tokio::signal::unix::SignalKind::from_raw(SIGCONT),
     )
     .map_err(|e| format!("tokio failed to hook on signal SIGCONT: {e}"))?;
+
+    env_logger::Builder::from_env(
+        env_logger::Env::default().default_filter_or("debug"),
+    )
+    .init();
 
     let mut interval =
         tokio::time::interval(std::time::Duration::from_secs(INTERVAL));

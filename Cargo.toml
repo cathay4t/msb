@@ -9,6 +9,8 @@ description = "My Sway Bar"
 
 [dependencies]
 chrono = { version = "0.4.38", features = ["alloc", "clock", "now", "std"], default-features = false }
+env_logger = "0.11.11"
+log = { version = "0.4.33", features = ["std"] }
 nispor = "1.2.21"
 reqwest = { version = "0.12.9", default-features = false, features = ["default-tls", "gzip"] }
 serde = { version = "1.0.210", features = ["derive"] }

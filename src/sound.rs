@@ -7,7 +7,9 @@ use crate::{CliError, SwayBarBlock};
 
 pub(crate) fn get_sound() -> Result<SwayBarBlock, CliError> {
     let output: String = String::from_utf8(
-        Command::new("wpctl")
+        Command::new("timeout")
+            .arg("1s")
+            .arg("wpctl")
             .arg("get-volume")
             .arg("@DEFAULT_AUDIO_SINK@")
             .output()?
