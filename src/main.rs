@@ -66,7 +66,7 @@ fn get_time() -> SwayBarBlock {
     let now = chrono::offset::Local::now();
     SwayBarBlock {
         name: "time".to_string(),
-        full_text: format!("{}", now.format("%Y-%m-%d %H:%M:%S")),
+        full_text: format!("{}", now.format("%m-%d %H:%M:%S")),
         ..Default::default()
     }
 }
