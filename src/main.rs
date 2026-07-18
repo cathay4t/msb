@@ -20,7 +20,6 @@ pub(crate) const COLOR_RED: &str = "#FF0000";
 pub(crate) const COLOR_YELLOW: &str = "#E9F505";
 // pub(crate) const COLOR_GREEN: &str = "#00FF00";
 
-const IFACE_NAME: &str = "wlan0";
 const INTERVAL: u64 = 10;
 
 // Following manpage swaybar-protocol
@@ -62,6 +61,23 @@ fn log(line: &str) -> Result<(), CliError> {
     Ok(writeln!(fd, "{line}")?)
 }
 
+async fn get_default_gateway_iface() -> Option<String> {
+    let mut filter = nispor::NetStateFilter::minimum();
+    filter.route = Some(nispor::NetStateRouteFilter::default());
+    if let Ok(state) =
+        nispor::NetState::retrieve_with_filter_async(&filter).await
+    {
+        for route in &state.routes {
+            if route.dst.as_deref() == Some("0.0.0.0/0")
+                || route.gateway.is_some()
+            {
+                return route.oif.clone();
+            }
+        }
+    }
+    None
+}
+
 fn get_time() -> SwayBarBlock {
     let now = chrono::offset::Local::now();
     SwayBarBlock {
@@ -79,13 +95,16 @@ async fn emit_status(
     if let Some(b) = aqi_fether.get() {
         blocks.push(b);
     }
-    match crate::rate::get_rate(IFACE_NAME).await {
-        Ok(b) => blocks.push(b),
-        Err(e) => log::warn!("{e}"),
-    }
-    match crate::wifi::get_wifi(IFACE_NAME).await {
-        Ok(b) => blocks.push(b),
-        Err(e) => log::warn!("{e}"),
+    let gateway_iface = get_default_gateway_iface().await;
+    if let Some(ref iface_name) = gateway_iface {
+        match crate::rate::get_rate(iface_name).await {
+            Ok(b) => blocks.push(b),
+            Err(e) => log::warn!("{e}"),
+        }
+        match crate::wifi::get_wifi(iface_name).await {
+            Ok(b) => blocks.push(b),
+            Err(e) => log::warn!("{e}"),
+        }
     }
     match crate::cpu::get_cpu().await {
         Ok(b) => blocks.push(b),
