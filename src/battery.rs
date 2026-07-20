@@ -19,8 +19,9 @@ pub(crate) fn get_battery() -> Result<Option<SwayBarBlock>, CliError> {
     let now = read_file_as_u64(&format!("{SYSFS_BASE_DIR}/energy_now"))?;
     let full =
         read_file_as_u64(&format!("{SYSFS_BASE_DIR}/energy_full_design"))?;
-    let is_charging =
-        read_file(&format!("{SYSFS_BASE_DIR}/status"))? != "Discharging";
+
+    let status = read_file(&format!("{SYSFS_BASE_DIR}/status"))? ;
+    let is_charging = status != "Discharging" && status != "Not charging";
 
     let percent = (now as f64 / full as f64 * 100.0) as u64;
 
