@@ -56,7 +56,7 @@ pub(crate) fn get_battery() -> Result<Option<SwayBarBlock>, CliError> {
 
     let (charge_str, color) = if is_charging {
         (EMOJI_CHARGING, None)
-    } else if !time_left.is_finite() || time_left < 0.5 {
+    } else if percent <= 20 || time_left < 0.5 {
         (EMOJI_BATTERY_EMPTY, Some(crate::COLOR_RED.to_string()))
     } else if percent > 40 {
         (EMOJI_BATTERY_GOOD, None)
