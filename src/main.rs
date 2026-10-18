@@ -61,21 +61,33 @@ fn log(line: &str) -> Result<(), CliError> {
     Ok(writeln!(fd, "{line}")?)
 }
 
+fn iface_is_up(iface_name: &str) -> bool {
+    std::fs::read_to_string(format!("/sys/class/net/{iface_name}/operstate"))
+        .map(|state| state.trim() != "down")
+        .unwrap_or(false)
+}
+
 async fn get_default_gateway_iface() -> Option<String> {
     let mut filter = nispor::NetStateFilter::minimum();
     filter.route = Some(nispor::NetStateRouteFilter::default());
-    if let Ok(state) =
-        nispor::NetState::retrieve_with_filter_async(&filter).await
-    {
-        for route in &state.routes {
-            if route.dst.as_deref() == Some("0.0.0.0/0")
-                || route.gateway.is_some()
-            {
-                return route.oif.clone();
-            }
-        }
-    }
-    None
+    let state = nispor::NetState::retrieve_with_filter_async(&filter)
+        .await
+        .ok()?;
+    state
+        .routes
+        .iter()
+        .filter(|route| {
+            route.gateway.is_some()
+                && matches!(route.dst.as_deref(), None | Some("0.0.0.0/0"))
+        })
+        .filter(|route| route.oif.as_deref().map(iface_is_up).unwrap_or(false))
+        .min_by_key(|route| {
+            (
+                route.address_family != nispor::AddressFamily::IPv4,
+                route.metric.unwrap_or(u32::MAX),
+            )
+        })
+        .and_then(|route| route.oif.clone())
 }
 
 fn get_time() -> SwayBarBlock {
