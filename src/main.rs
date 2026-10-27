@@ -2,6 +2,7 @@
 
 mod aqi;
 mod battery;
+mod config;
 mod cpu;
 mod error;
 mod fs;
@@ -19,8 +20,6 @@ use crate::error::CliError;
 pub(crate) const COLOR_RED: &str = "#FF0000";
 pub(crate) const COLOR_YELLOW: &str = "#E9F505";
 // pub(crate) const COLOR_GREEN: &str = "#00FF00";
-
-const INTERVAL: u64 = 10;
 
 // Following manpage swaybar-protocol
 
@@ -100,11 +99,11 @@ fn get_time() -> SwayBarBlock {
 }
 
 async fn emit_status(
-    aqi_fether: &crate::aqi::AqiFetcher,
+    aqi_fether: Option<&crate::aqi::AqiFetcher>,
 ) -> Result<(), CliError> {
     let mut blocks: Vec<SwayBarBlock> = Vec::new();
 
-    if let Some(b) = aqi_fether.get() {
+    if let Some(b) = aqi_fether.and_then(|fetcher| fetcher.get()) {
         blocks.push(b);
     }
     let gateway_iface = get_default_gateway_iface().await;
@@ -156,25 +155,30 @@ async fn main() -> Result<(), CliError> {
     )
     .init();
 
+    let config = crate::config::Config::load()?;
+
     let mut interval =
-        tokio::time::interval(std::time::Duration::from_secs(INTERVAL));
+        tokio::time::interval(std::time::Duration::from_secs(config.interval));
 
     println!("{}", serde_json::to_string(&SwayBarApiVersion::default())?);
 
     println!("[");
 
-    let aqi_fether = crate::aqi::AqiFetcher::new().await?;
+    let aqi_fether = match &config.aqi.location {
+        Some(location) => Some(crate::aqi::AqiFetcher::new(location).await?),
+        None => None,
+    };
 
     loop {
         tokio::select! {
             _ = interval.tick() => {
-                if let Err(e) = emit_status(&aqi_fether).await {
+                if let Err(e) = emit_status(aqi_fether.as_ref()).await {
                     log(&e.to_string())?;
                 }
             }
             _ = continue_stream.recv() => {
                 log("Got continue signal")?;
-                if let Err(e) = emit_status(&aqi_fether).await {
+                if let Err(e) = emit_status(aqi_fether.as_ref()).await {
                     log(&e.to_string())?;
                 }
             }

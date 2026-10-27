@@ -8,11 +8,12 @@ description = "My Sway Bar"
 
 
 [dependencies]
-chrono = { version = "0.4.38", features = ["alloc", "clock", "now", "std"], default-features = false }
+chrono = { version = "0.4.45", features = ["alloc", "clock", "now", "std"], default-features = false }
 env_logger = "0.11.11"
-log = { version = "0.4.33", features = ["std"] }
-nispor = "1.2.21"
-reqwest = { version = "0.12.9", default-features = false, features = ["default-tls", "gzip"] }
-serde = { version = "1.0.210", features = ["derive"] }
-serde_json = "1.0.128"
-tokio = { version = "1.40.0", features = ["signal", "rt-multi-thread"] }
+log = { version = "0.4.34", features = ["std"] }
+nispor = "1.2.27"
+reqwest = { version = "0.12.28", default-features = false, features = ["default-tls", "gzip"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+serde_yaml = "0.9.34"
+tokio = { version = "1.54.1", features = ["signal", "rt-multi-thread"] }

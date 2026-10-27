@@ -7,22 +7,20 @@ use serde::Deserialize;
 
 use crate::{CliError, SwayBarBlock};
 
-// 成都三瓦窑
-const URI: &str = "https://api.waqi.info/feed/@1362?token=";
-
 #[derive(Debug, Clone)]
 pub(crate) struct AqiFetcher {
     aqi: Arc<AtomicU32>,
 }
 
 impl AqiFetcher {
-    pub(crate) async fn new() -> Result<Self, CliError> {
+    pub(crate) async fn new(location: &str) -> Result<Self, CliError> {
+        let location = location.to_string();
         let aqi = Arc::new(AtomicU32::new(0));
         let aqi_clone = aqi.clone();
         tokio::spawn(async move {
             loop {
                 aqi_clone.store(0, Ordering::Relaxed);
-                if let Ok(i) = get_aqi().await {
+                if let Ok(i) = get_aqi(&location).await {
                     aqi_clone.store(i, Ordering::Relaxed);
                 }
                 tokio::time::sleep(std::time::Duration::from_secs(1800)).await;
@@ -65,17 +63,19 @@ struct AqiCnReplyData {
     aqi: u32,
 }
 
-async fn get_aqi() -> Result<u32, CliError> {
+async fn get_aqi(location: &str) -> Result<u32, CliError> {
     let aqicn_key = if let Ok(k) = std::env::var("AQI_CN_KEY") {
         k
     } else {
         return Ok(0);
     };
 
-    let body = reqwest::get(&format!("{URI}{aqicn_key}"))
-        .await?
-        .text()
-        .await?;
+    let body = reqwest::get(&format!(
+        "https://api.waqi.info/feed/{location}/?token={aqicn_key}"
+    ))
+    .await?
+    .text()
+    .await?;
 
     let reply: AqiCnReply = serde_json::from_str(&body)?;
     Ok(reply.data.aqi)
