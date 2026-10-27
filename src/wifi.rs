@@ -28,26 +28,32 @@ pub(crate) async fn get_wifi(
     filter.iface = Some(iface_filter);
     let state = nispor::NetState::retrieve_with_filter_async(&filter).await?;
     if let Some(iface) = state.ifaces.get(iface_name) {
-        if let Some(signal) = iface.wifi.as_ref().and_then(|w| w.signal) {
-            let signal = dbm_to_percentage(signal);
-            let color = if signal > 50 {
-                None
-            } else if signal > 25 {
-                Some(crate::COLOR_YELLOW.to_string())
-            } else {
-                Some(crate::COLOR_RED.to_string())
-            };
-            return Ok(SwayBarBlock {
-                name: "wifi".into(),
-                full_text: format!("📶 {signal}%"),
-                color,
-                ..Default::default()
-            });
+        if let Some(wifi) = iface.wifi.as_ref() {
+            if let (Some(ssid), Some(signal)) =
+                (wifi.ssid.as_deref(), wifi.signal)
+            {
+                if !ssid.is_empty() {
+                    let signal = dbm_to_percentage(signal);
+                    let color = if signal > 50 {
+                        None
+                    } else if signal > 25 {
+                        Some(crate::COLOR_YELLOW.to_string())
+                    } else {
+                        Some(crate::COLOR_RED.to_string())
+                    };
+                    return Ok(SwayBarBlock {
+                        name: "wifi".into(),
+                        full_text: format!("{ssid}: {signal}%"),
+                        color,
+                        ..Default::default()
+                    });
+                }
+            }
         }
     }
     Ok(SwayBarBlock {
         name: "wifi".into(),
-        full_text: "📶 0%".to_string(),
+        full_text: "no_wifi: 0%".to_string(),
         color: Some(crate::COLOR_RED.to_string()),
         ..Default::default()
     })
