@@ -82,7 +82,7 @@ async fn get_default_gateway_iface() -> Option<String> {
         .filter(|route| route.oif.as_deref().map(iface_is_up).unwrap_or(false))
         .min_by_key(|route| {
             (
-                route.address_family != nispor::AddressFamily::IPv4,
+                route.address_family != nispor::AddressFamily::Ipv4,
                 route.metric.unwrap_or(u32::MAX),
             )
         })

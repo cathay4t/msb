@@ -11,8 +11,8 @@ description = "My Sway Bar"
 chrono = { version = "0.4.45", features = ["alloc", "clock", "now", "std"], default-features = false }
 env_logger = "0.11.11"
 log = { version = "0.4.34", features = ["std"] }
-nispor = "1.2.27"
-reqwest = { version = "0.12.28", default-features = false, features = ["default-tls", "gzip"] }
+nispor = "2.0"
+reqwest = { version = "0.13", default-features = false, features = ["default-tls", "gzip"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
 serde_yaml = "0.9.34"
